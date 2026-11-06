@@ -1,82 +1,63 @@
-# Free deployment: Render + Aiven + public GitHub
+# Render deployment with a hosted MySQL database
 
-Prepared: 6 November 2026. Pehli planning ke mutabiq **free demo** ke liye Render + Aiven use honge. Abhi koi cloud service/database create ya deploy nahi hui. User khud neeche ke dashboard steps karega.
+Updated 6 November 2026. Source is published at [obaid120/h-h-hospital](https://github.com/obaid120/h-h-hospital). The selected demo database is **Filess.io Shared MySQL 8.0**; the web application will run on **Render Free**. The database has been created by the user, but authenticated connection, schema migration, TLS identity verification and the hosted app have not yet been verified.
 
-## 1. Kya kahan rahega?
+## 1. Hosting and limits
 
-| Service | Kaam | Selected plan |
-| --- | --- | --- |
-| GitHub | Public source code, Dockerfile, guides | Public repository |
-| Render | Laravel frontend/backend, Nginx + PHP 8.4 FPM container | Free Web Service |
-| Aiven | Persistent MySQL database: patients, bookings, payments, prescriptions | Free MySQL |
+| Component | Location |
+| --- | --- |
+| Source and installation README | Public GitHub repository |
+| Laravel, Nginx and PHP 8.4 FPM | Render Docker Web Service |
+| Persistent database records | Separately hosted MySQL |
+| Credentials and trusted CA certificate | Render Environment / Secret Files |
 
-Flow: **browser → HTTPS Render app → TLS Aiven MySQL**. Website online chalne ke liye aap ka PC/XAMPP running hona zaroori nahi. GitHub Pages PHP/Laravel server nahi chalata.
+The application's source is in the inner `h-h-hospital/` directory. The Docker build context is the repository root. GitHub does not run the PHP application.
 
-Verified current limits: Render free app 15 minutes inactivity ke baad sleep hoti hai; next request ko startup mein takreeban one minute lag sakta hai. Free instance local uploads/files restart/redeploy/sleep par lose karti hai. Aiven free service 1 CPU, 1 GB RAM, 1 GB disk aur 76 connection limit deti hai; unused database power off ho sakta hai. Cloud dashboards mein **Free** plan select karein; paid/trial upgrade select na karein. No paid VPS is required for this demo.
+Filess.io currently lists Shared Free with 2 databases and **10 MB per database**. Check schema + indexes + data size after migration; fitting the full application is not yet proven. Its dashboard may append a suffix to a requested database name: copy the **actual complete name**, host, port and username from the connection screen. MySQL 8.0 must be selected instead of 5.7; business-critical verification previously used 8.4/InnoDB, so compatibility still needs verification.
 
-**Demo constraint:** current doctor photos local disk par upload hoti hain; Render free par woh durable nahi. Restart ke baad photos re-upload karni hongi. Clinical/financial records Aiven mein rahenge. Persistent external photo storage abhi configure nahi; real hospital operation ki acceptance is free demo se complete nahi hoti. Render Free ko production hospital operation ke liye approved na samjhein. Separate scheduler/backup/restore/uptime acceptance pending rahegi.
+Render Free sleeps after inactivity and loses local filesystem changes after restarts/redeploys/sleep. Current doctor photos are local uploads and are not durable on that plan. Staff sessions/cache and clinical/financial records use MySQL. A sleeping container also stops its scheduler. This is a small demo setup, not completed live-hospital operational acceptance.
 
-## 2. Public GitHub repository banayein (Windows)
+Aiven was considered earlier. Its currently fetched MySQL pricing starts with the paid Developer plan; older free-tier documentation conflicts with the current console. A new-account trial is temporary and is not an ongoing free MySQL plan. The configuration is provider-neutral; no account-specific host, username, password or certificate is committed.
 
-Git repository root **D:\laravel-project** rakhein, inner h-h-hospital nahi, taake docs aur render.yaml clone mein saath aayein. Is checkout mein Git abhi initialized nahi hai.
+## 2. Resolve database TLS before deploying
 
-GitHub → New repository → name `h-h-hospital` → **Public**. Auto README/.gitignore/license select na karein. PowerShell:
+The included startup script requires a readable `MYSQL_ATTR_SSL_CA` file. It does not assume an Aiven-specific filename and does not silently disable certificate verification.
 
-```powershell
-Set-Location D:\laravel-project
-git init -b main
-git config user.name "Your Name"
-git config user.email "YOUR_GITHUB_NOREPLY_EMAIL"
-git check-ignore h-h-hospital/.env h-h-hospital/.env.testing h-h-hospital/storage/app/private/initial-admin.txt h-h-hospital/storage/app/private/mysql84/credentials.json
-git add .
-git diff --cached --stat
-git diff --cached --name-only
-```
+A password-free TLS handshake against the user's selected Filess endpoint succeeded far enough to reveal a **self-signed certificate chain**, which is not trusted by the normal system CA bundle. This proves TLS is offered, not that the server identity has been authenticated. No database login, queries or writes were performed.
 
-Chaar private paths ignored show hon. Staged filenames/content inspect karein: passwords, actual `.env`, patient records, dumps, uploads, runtime storage, vendor/node_modules publish nahi hone chahiye. Storage ki `.gitignore` files aur blank-secret `.example` templates theek hain. Ab:
+Before entering database credentials into a running deployment:
 
-```powershell
-git commit -m "Prepare hospital OPD demo and operational handoff"
-git remote add origin https://github.com/YOUR_USERNAME/h-h-hospital.git
-git push -u origin main
-```
+1. Obtain the database provider's CA certificate through its authenticated dashboard or another independently trusted provider channel. Look for SSL/TLS, CA certificate or connection security settings. If absent, ask the provider how to verify that particular MySQL endpoint.
+2. Confirm the provider's certificate setup supports verification for the actual database hostname. A CA file alone does not repair a hostname mismatch.
+3. In Render, add a Secret File named **`mysql-ca.pem`** containing the provider CA. Set `MYSQL_ATTR_SSL_CA=/etc/secrets/mysql-ca.pem`.
+4. If a valid, hostname-verifiable provider certificate cannot be obtained, keep deployment pending; do not remove TLS checks or copy an unrelated Aiven CA to get past startup.
 
-Browser/Git Credential Manager se login karein; password/token remote URL mein na lagayein. GitHub secret scanning/push protection available ho to enable karein. `.gitignore` already committed secret history se nahi hatati: leaked credential revoke/rotate first, phir GitHub sensitive-data removal follow karein. License apne code ownership ke decision ke mutabiq add karein.
+Do not treat a certificate merely downloaded from an unverified connection as independently trusted. Do not paste passwords, full connection URIs or private credentials into GitHub/chat. Public CA files are trust configuration, not database passwords, but keep the selected trust material in Render Secret Files rather than the application image.
 
-## 3. Aiven par FREE MySQL banayein
+## 3. Render Web Service settings
 
-1. Aiven account/project create karein → MySQL service → **Free** plan. Paid trial ke bajaye actual Free service select karein. Region Render region ke qareeb choose karein.
-2. MySQL **8.4** available ho to select/verify karein; local business-critical tests MySQL 8.4/InnoDB par hue hain. Agar service doosra major de to compatibility acceptance ko pending rakhein; local tests ka result us version ka proof nahi.
-3. Service running hone par Overview/Connection information se **host, port, database name, username, password** privately note karein. Port 3306 assume na karein. Dashboard ka actual `defaultdb` ya apna separate empty demo DB name use karein.
-4. Aiven project **CA certificate** download karein. Isay GitHub mein commit na karein; Render par Secret File banegi.
-5. Service user ko sirf selected demo DB ke required data + migration permissions dein; database schema recreate/import manually nahi karna. App startup migrations create karengi. Root/OS login ki zaroorat nahi.
-6. Aiven service network/IP filter available ho to Render service ke **all outbound IP ranges** allow karein; sirf aik DNS-resolved IP allow na karein. Local backup ke liye apna current public IP separately allow karein. TLS verification disable karke connection error solve na karein.
-
-No local development dump/demo passwords import karein. Online environment ke individual staff accounts Admin se create honge. Aiven free mein one MySQL service limit hai; demo ko later real production ke saath share na karein. Separate DB/users sharing same service bhi full isolation/SLA nahi dete.
-
-## 4. Render par FREE Docker Web Service banayein
-
-Render account → **New → Web Service** → GitHub public repository connect karein. Settings:
+Render → **New → Web Service** → connect the existing GitHub repository. Configure:
 
 | Field | Value |
 | --- | --- |
+| Repository | `obaid120/h-h-hospital` |
 | Branch | `main` |
 | Language/runtime | **Docker** |
-| Root Directory | **blank** (repository root) |
+| Root Directory | **blank** |
 | Dockerfile Path | `h-h-hospital/Dockerfile` |
 | Docker Build Context | `.` |
 | Instance Type | **Free** |
 | Health Check Path | `/up` |
-| Port | `10000` (included Nginx config) |
+| Port | `10000` |
 | Auto Deploy | Initially off/manual |
 
-Repo root ka `render.yaml` optional Blueprint alternative hai. Manual Web Service setup secret file/env fill karne ke liye straightforward hai. Render ka Postgres/database create nahi karna: MySQL **Aiven** par hai. Free Render shell/SSH, one-off job aur paid cron available assume na karein.
+`render.yaml` is an optional Blueprint alternative. No Render Postgres database is needed. Free services have no interactive shell/SSH or one-off jobs; the start script runs migrations idempotently before serving requests.
 
-**Before first deploy:** Environment → Secret Files → filename **`aiven-ca.pem`** → Aiven CA certificate ka exact content paste karein. Container mein path `/etc/secrets/aiven-ca.pem` hoga. Dockerfile explicit source allowlist use karti hai; secret files ko image mein COPY nahi karti.
+The image builds frontend assets with Node 24 and installs PHP 8.4 production dependencies from the lockfile. Secrets are supplied at runtime. Docker source COPY paths are explicit, so local credentials, database files, tests and uploads do not enter the image.
 
-## 5. Render Environment variables
+## 4. Render Environment variables
 
-`docs/hosting/.env.render.example` mein complete sample list hai. Dashboard mein values add karein; actual `.env` upload/commit nahi karni.
+Use the dashboard's actual database values. `docs/hosting/.env.render.example` contains a blank-secret reference template:
 
 ```dotenv
 APP_NAME="H&H Hospital"
@@ -85,12 +66,12 @@ APP_DEBUG=false
 APP_URL=https://YOUR-SERVICE.onrender.com
 APP_KEY=YOUR_STABLE_LARAVEL_KEY
 DB_CONNECTION=mysql
-DB_HOST=YOUR_AIVEN_HOST
-DB_PORT=YOUR_AIVEN_PORT
-DB_DATABASE=YOUR_AIVEN_DATABASE
-DB_USERNAME=YOUR_AIVEN_USER
-DB_PASSWORD=YOUR_AIVEN_PASSWORD
-MYSQL_ATTR_SSL_CA=/etc/secrets/aiven-ca.pem
+DB_HOST=YOUR_DATABASE_HOST
+DB_PORT=YOUR_DATABASE_PORT
+DB_DATABASE=YOUR_COMPLETE_DATABASE_NAME
+DB_USERNAME=YOUR_DATABASE_USERNAME
+DB_PASSWORD=YOUR_DATABASE_PASSWORD
+MYSQL_ATTR_SSL_CA=/etc/secrets/mysql-ca.pem
 TRUSTED_PROXIES=*
 SESSION_DRIVER=database
 SESSION_ENCRYPT=true
@@ -106,67 +87,63 @@ INITIAL_ADMIN_EMAIL=YOUR_ADMIN_EMAIL
 INITIAL_ADMIN_PASSWORD=YOUR_UNIQUE_STRONG_PASSWORD
 ```
 
-Render env input mein value ke around example quotes manually na add karein; dashboard plain value store karta hai. `TRUSTED_PROXIES=*` is Render's reverse-proxy-only setup ke liye hai; direct public VPS par all proxies trust na karein. HTTPS forms/session correct scheme par rahengi.
+Render's individual environment inputs take plain values; don't add the example's wrapping quotes to the dashboard value. `TRUSTED_PROXIES=*` applies to Render's reverse-proxy-only ingress, not an arbitrary directly exposed server.
 
-**APP_KEY ek baar generate** karein, dashboard mein set karein aur password manager mein save karein. Existing local key ko print/share karne ke bajaye new online environment ka key banayein. Local PHP 8.4 terminal mein:
+Generate an online-environment APP_KEY **once**, privately, from the inner application directory:
 
 ```powershell
 C:\php84\php.exe artisan key:generate --show
 ```
 
-Command **h-h-hospital directory** se run karein. `--show` local `.env` overwrite nahi karta. Output privately Render `APP_KEY` mein paste karein. Har deploy par key regenerate na karein. Initial Admin password 12+ characters, uppercase/lowercase/numbers ho; woh GitHub/VITE variables mein na daalein.
+`--show` does not replace the local `.env` key. Save the output privately as Render APP_KEY and in your password manager; preserve it across deployments/restores. Do not put secrets in `VITE_*` variables, which enter browser assets.
 
-## 6. Deploy aur first Admin login
+The initial Admin password must have at least 12 characters, upper/lowercase letters and numbers. There are no fixed demo credentials in the public repository.
 
-Create Web Service / **Manual Deploy → Deploy latest commit**. Build Node 24 se assets aur PHP 8.4 se locked production dependencies install karega. Start script:
+## 5. First deployment
 
-1. Required key/URL/Aiven CA config check karti hai.
-2. Existing migrations idempotently run karti hai (`migrate --force`); destructive reset/demo seeding nahi karti.
-3. First active Admin absent ho to `staff:bootstrap-admin` chalati hai. Existing Admin ko overwrite/reset nahi karti.
-4. One-time password process environment se remove karke config/routes/views cache banati hai.
-5. Nginx, PHP-FPM aur scheduler supervisor start karti hai; stdout/stderr Render logs mein jate hain.
+Only after the provider CA and environment are ready, create/deploy the Web Service. Startup validates required configuration, runs existing migrations with `--force`, and bootstraps one Admin if no active Admin exists. It never resets tables or seeds local demo records. It removes the one-time bootstrap password from its child-process environment, caches configuration/routes/views, records a startup heartbeat and starts Nginx/PHP-FPM/scheduler under supervisor.
 
-Free Render pre-deploy shell nahi deta, is liye migrations startup mein hain. Demo mein one instance/manual deployment rakhein. Future production migrations ke liye coordinated release/backup strategy chahiye. Migration/DB/CA failure par container request serve karne se pehle exit karega; logs mein failure resolve karke redeploy karein.
+If migration, TLS or connection fails, startup exits before serving. Resolve the actual error and redeploy; do not use `migrate:fresh`, overwrite the existing database or disable certificate verification. SQL permissions must allow schema migrations in the selected database, not unrelated databases.
 
-Render assigned HTTPS URL kholein → `/staff/login` → configured Admin se login. **Successful login ke baad dashboard se `INITIAL_ADMIN_PASSWORD` remove** karke redeploy karein. APP_KEY/DB secrets preserve karein. Admin se real demo doctors/Reception/Doctor accounts, fee/hours aur hospital settings add karein. `/_design` preview routes staging mein inaccessible honi chahiye.
+Visit the assigned HTTPS host and `/staff/login`, then sign in using your configured Admin. After successful first login, remove `INITIAL_ADMIN_PASSWORD` from Render Environment and redeploy. The existing Admin stays intact. Create Reception/Doctor accounts and profiles through the Admin screens, then configure fees, OPD hours and hospital settings. `_design` routes are local-only.
 
-Public domain ki zaroorat nahi: free `onrender.com` subdomain/managed HTTPS use ho sakta hai. Later custom domain add karein to APP_URL update aur redeploy karein.
+## 6. Compatibility, space and workflow checks
 
-## 7. Free host scheduler, backups aur monitoring
+Before calling the demo ready, verify on the actual MySQL 8.0 service:
 
-Supervisor container awake hone par `schedule:work` chalata hai; har minute private heartbeat banti hai. **App sleep ho to scheduler bhi stop hota hai.** Current business rules ko daily reset/no-show cron ki zaroorat nahi: absent online Pending aur paid unseen Confirmed rehte hain, reserved seats/tokens retain hote hain. Core operations synchronous hain, queue worker required nahi.
+- All migrations complete using InnoDB; no unsupported SQL or missing permissions.
+- Provider quota still has room after tables/indexes; database size includes sessions, cache and audit growth. The 10 MB limit is small, and a successful empty migration does not establish long-term capacity.
+- The MySQL session reports a nonempty `Ssl_cipher` and the configured certificate validation succeeds. Never display credentials in an operator health endpoint.
+- Fabricated online booking → Reception identity verification/payment/token → normal/Priority walk-in → Doctor queue/draft/explicit completion → print/reprint → Admin reports/cancellation/refund works.
+- Duplicate requests, uncertain network responses and same-account session recovery do not duplicate collection/refund/clinical writes.
+- A4 prescription and 80 mm receipt output are actually inspected. Existing receipt/prescription reprints create no new payment or completion.
 
-`/up` application + DB availability probe hai. Local/Docker operator `php artisan ops:check --production` se DB/cache, asset manifest, heartbeat, HTTPS/secure sessions/config checks kar sakta hai. Free dashboard mein shell nahi, is command ko public admin endpoint na banayein. Startup heartbeat ko continuous cron verification ka proof na samjhein; Render logs mein later scheduler output inspect karein. Render/Aiven dashboard health/error/usage notifications operator email ko configure karein. Free idle cold start ko normal behavior ke taur par record karein; pings se always-on uptime claim na karein.
+These checks are pending until a verified authenticated database connection and a deployed app exist. Native print/PDF and operational acceptance are not satisfied by local regression tests alone.
 
-Aiven free documentation backups include karti hai, lekin user-controlled restore/PITR/retention ko paid plan jaisa assume na karein. Go-live/acceptance se pehle independent encrypted export aur separate restore drill chahiye. Local MySQL **8.4 client** se private mode-protected option file use karein, actual Aiven port/CA aur `ssl-mode=VERIFY_IDENTITY` configure karein. Database name actual demo name ho. Dump credentials command line/GitHub mein na daalein. `--single-transaction --quick --no-tablespaces --set-gtid-purged=OFF --skip-triggers` current InnoDB schema ke liye hain; migrations ke dauran dump na lein. PowerShell par binary SQL ko pipeline ke bajaye `--result-file` mein export karein.
+## 7. Scheduler, backups and recovery
 
-`hosting/backup-database.sh` Linux backup runner ke liye ready hai: GPG-encrypted dump + checksum independent rclone remote par copy karti hai, pipeline/upload failure par nonzero exit hota hai. Isay free Render sleeping filesystem/cron par durable backup na samjhein. User ke trusted Linux runner/PC/independent backup host par daily **02:15 Pakistan = previous day 21:15 UTC** schedule karein; runner ka online rehna backup ke liye zaroori hai. `hosting/mysql-backup.cnf.example` private copy mein actual Aiven host/port/credentials aur SSL CA options supply karein. Cron example **self-managed Linux runner/reference** hai, Render dashboard command nahi. No paid runner/account create kiya gaya hai.
+The container supervisor runs `schedule:work` while awake. Heartbeats never reset OPD statuses, seats or tokens. Core operations are synchronous (`QUEUE_CONNECTION=sync`); no queue worker is required. `/up` checks application bootstrap + DB connectivity. A trusted operator/container can use `php artisan ops:check --production` to check dependencies, assets, deployment settings and heartbeat. Render Free has no interactive dashboard shell; do not expose the CLI check publicly to work around that.
 
-Private password manager mein APP_KEY, cloud account recovery aur backup GPG private key/passphrase server se alag save karein. Doctor photos free disk par durable nahi: demo ke liye originals private backup rakhein; full persistent upload acceptance external storage configuration tak pending hai. Actual records ka restore test isolated DB/app mein karein, public stage mein real patients expose na karein.
+Filess's free-plan table lists weekly backups. Verify actual access, retention and restore capability in the dashboard; no independent restore has been demonstrated. Keep separate encrypted database exports and original photo files plus the APP_KEY. Use the actual provider port and trusted CA with MySQL client verification. Do not dump while running migrations/DDL.
 
-Alert acceptance: DB unavailable, app error, stale backups >26h, Aiven disk >80%, certificate issue aur scheduler failure while container awake. Actual notification delivery test karein; dashboard configuration/alerts abhi user ko karni hain. Logs/references public GitHub issues mein paste karte waqt patient data redact karein.
+`hosting/backup-database.sh` is for an independent Linux backup runner: a consistent InnoDB dump is compressed, GPG-encrypted, hashed and copied to an rclone remote. Failure exits nonzero without updating the success marker. Configure real private MySQL/GPG/rclone values outside the checkout. `hosting/cron.example` is a self-managed runner example, not a cron facility supplied by Render Free. A daily 02:15 Pakistan backup runs at 21:15 UTC on the previous UTC date. No runner/remote/account has been created.
 
-## 8. Backup restore aur staged workflow verification
+A restore drill must download the offsite copy, verify the hash, decrypt/import into a separate isolated database, restore the original key/files, and compare clinical/financial records and reprints. Record the result and measured recovery time privately. Do not overwrite the current demo DB while testing restore. Daily exports imply a potential loss window up to 24 hours; weekly provider backups alone may lose more recent data.
 
-Offsite se encrypted dump + checksum **download** karke hash verify karein, decrypt karke separate restore database/user mein import karein. Production/current demo DB overwrite na karein. Restored app ko original backed-up APP_KEY dein; sessions invalidate karne ka recovery decision record karein. Count/history, MR identity, payments/refunds, draft/final prescriptions aur reprint compare karein. Timestamp/hash/result aur measured recovery duration private evidence mein save karein. Daily export ki initial recovery loss window up to 24h hai; actual recovery time drill se pata chalega.
+Configure dashboard/operator notifications for app/DB failure, quota/disk growth, stale backups and certificate issues. Keep logs private; redact patient data before sharing an error publicly. [STAFF_HANDOFF.md](STAFF_HANDOFF.md) covers staff workflows and recovery.
 
-Phir fabricated booking → Reception payment/token → Priority → Doctor prescription/completion → print/reprint → Admin refund/report flow run karein. Role permissions, duplicate-submit recovery aur no-show preservation verify karein. 80 mm receipt aur A4 prescription PDF/native output inspect karein. Staff ke liye [STAFF_HANDOFF.md](STAFF_HANDOFF.md) available hai. Internal testing files aur planning notes public repository mein shamil nahi hain.
+## 8. Updates and troubleshooting
 
-**Hosted acceptance deployment ke baad:** selected scheduler/backup/alerts/restore aur actual staged journeys verify karein. Docker configuration prepared hai; local image build ya Render deploy success abhi claim nahi kiya gaya.
-
-## 9. Subsequent updates / common errors
-
-Code change → local checks → Git commit/push → Render Manual Deploy. APP_KEY, DB credentials aur Aiven data preserve karein. Schema change se pehle backup lein; one free demo instance par operations temporarily pause karein. Failed update mein compatible previous image rollback ho sakta hai, lekin database automatically reverse nahi hota; blind `migrate:rollback`/reset na karein. Old migration ke saath incompatible DB ke liye reviewed forward fix ya coordinated restore required hai.
+Code change → local checks → Git commit/push → Render Manual Deploy. Preserve APP_KEY, credentials and database records. Before schema updates, take a verified backup and pause demo operations. Reverting the app image does not automatically revert the schema; use a reviewed forward fix or coordinated recovery if versions are incompatible.
 
 | Error | Check |
 | --- | --- |
-| PHP runtime not found | Docker runtime select ho, native PHP runtime nahi |
-| Docker COPY missing file | Root Directory blank aur build context repository root ho |
-| SQL connection refused / timeout | Aiven running, correct host/port, outbound IPs allowed |
-| TLS/CA verification failed | Correct project CA Secret File/path; verification disable na karein |
-| 419 / insecure form URLs | APP_URL HTTPS, proxy setting, stable APP_KEY, database sessions |
-| 500 / migration failed | Render logs, Aiven permissions/version, latest migration; no reset |
-| First request slow | Render free cold start; presentation se pehle app kholein |
-| Photo missing after restart | Free ephemeral disk limit; original re-upload, persistent storage pending |
+| Docker COPY missing file | Root Directory blank; repository-root build context |
+| Database timeout | Correct provider host/port; network access allowed |
+| Self-signed CA / hostname error | Obtain the provider trust chain and correct certificate hostname; keep verification enabled |
+| Migration denied / quota exceeded | Provider permissions, MySQL version and actual quota; no reset |
+| 419 or wrong URL scheme | HTTPS APP_URL, stable APP_KEY, proxy setting, DB sessions |
+| Slow first request | Render Free idle cold start |
+| Missing doctor photos after restart | Ephemeral free disk; persistent external uploads still pending |
 
-Official references: [Render PHP/Docker](https://render.com/docs/deploy-php-laravel-docker), [free limits](https://render.com/docs/free), [runtime secrets](https://render.com/docs/docker-secrets), [Aiven free MySQL](https://aiven.io/docs/products/mysql/concepts/mysql-free-tier), [Aiven TLS](https://aiven.io/docs/platform/concepts/tls-ssl-certificates), [Laravel deployment](https://laravel.com/docs/13.x/deployment), [GitHub publishing](https://docs.github.com/en/migrations/importing-source-code/using-the-command-line-to-import-source-code/adding-locally-hosted-code-to-github), [MySQL dumps](https://dev.mysql.com/doc/refman/8.4/en/mysqldump.html).
+Official references: [Render PHP/Docker](https://render.com/docs/deploy-php-laravel-docker), [Render free limits](https://render.com/docs/free), [Render secret files](https://render.com/docs/docker-secrets), [Filess Shared plans](https://docs.filess.io/docs/pricing/plans/), [Filess supported engines](https://docs.filess.io/docs/engines/supported-engines/), [Aiven current MySQL pricing](https://aiven.io/pricing/mysql), [MySQL encrypted connections](https://dev.mysql.com/doc/refman/8.0/en/using-encrypted-connections.html), [Laravel deployment](https://laravel.com/docs/13.x/deployment).

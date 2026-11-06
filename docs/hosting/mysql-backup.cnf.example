@@ -6,6 +6,6 @@ port=3306
 protocol=tcp
 user=opd_backup
 password=REPLACE_ON_SERVER
-# For Aiven, use its actual host/port and the downloaded project CA:
+# For a hosted database, use its actual host/port and provider CA:
 # ssl-mode=VERIFY_IDENTITY
-# ssl-ca=/etc/handh/aiven-ca.pem
+# ssl-ca=/etc/handh/mysql-ca.pem

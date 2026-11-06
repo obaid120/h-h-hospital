@@ -97,11 +97,11 @@ The prepared deployment uses:
 | --- | --- |
 | GitHub | Application source |
 | Render Free Web Service | Docker-based Laravel app with Nginx and PHP-FPM |
-| Aiven Free MySQL | Persistent application database over TLS |
+| Hosted MySQL (selected demo: Filess.io Shared) | Persistent application database over TLS |
 
-Follow the [deployment guide](docs/DEPLOYMENT.md) for the Aiven CA certificate, Render environment variables, initial Admin setup, backups and verification. The repository includes a Dockerfile and optional `render.yaml` Blueprint. Use the **repository root** as the Docker build context and `h-h-hospital/Dockerfile` as the Dockerfile path.
+Follow the [deployment guide](docs/DEPLOYMENT.md) for the provider CA certificate, Render environment variables, initial Admin setup, backups and verification. The repository includes a Dockerfile and optional `render.yaml` Blueprint. Use the **repository root** as the Docker build context and `h-h-hospital/Dockerfile` as the Dockerfile path.
 
-Render Free can sleep when idle and does not preserve local uploaded photos across restarts. Aiven stores database records separately. This setup is intended for a demo; durable photo storage, backups, restore checks and operational availability must be verified before live hospital use. The Docker image and hosted deployment have not yet been verified in a running cloud environment.
+Render Free can sleep when idle and does not preserve local uploaded photos across restarts. The database provider stores records separately. Filess.io Shared Free lists only 10 MB per database, so check actual schema/index/data size before using it. The existing app was verified with MySQL 8.4/InnoDB; the selected MySQL 8.0 service still needs compatibility and authenticated TLS checks. The observed Filess endpoint uses a self-signed CA: obtain a trusted provider certificate before deploying. This setup is intended for a demo; durable photos, backups, restore checks and operational availability must be verified before live hospital use. The Docker image and hosted deployment have not yet been verified in a running cloud environment.
 
 ## Staff and operations
 

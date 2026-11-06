@@ -1,5 +1,5 @@
 # Optional Blueprint; manual Web Service setup is also documented.
-# No Render database is created: use your existing FREE Aiven MySQL service.
+# No Render database is created: connect your separately hosted MySQL database.
 services:
   - type: web
     name: handh-hospital-demo
@@ -33,7 +33,7 @@ services:
       - key: DB_PASSWORD
         sync: false
       - key: MYSQL_ATTR_SSL_CA
-        value: /etc/secrets/aiven-ca.pem
+        value: /etc/secrets/mysql-ca.pem
       - key: TRUSTED_PROXIES
         value: "*"
       - key: SESSION_DRIVER
@@ -58,4 +58,4 @@ services:
         sync: false
       - key: INITIAL_ADMIN_PASSWORD
         sync: false
-# Add aiven-ca.pem via Render Environment > Secret Files before first deployment.
+# Add your database provider CA as mysql-ca.pem in Render Secret Files.
