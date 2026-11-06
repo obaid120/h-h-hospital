@@ -1,0 +1,61 @@
+# Optional Blueprint; manual Web Service setup is also documented.
+# No Render database is created: use your existing FREE Aiven MySQL service.
+services:
+  - type: web
+    name: handh-hospital-demo
+    runtime: docker
+    plan: free
+    dockerfilePath: ./h-h-hospital/Dockerfile
+    dockerContext: .
+    healthCheckPath: /up
+    autoDeployTrigger: off
+    envVars:
+      - key: APP_ENV
+        value: staging
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: APP_NAME
+        value: H&H Hospital
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        sync: false
+      - key: DB_DATABASE
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: MYSQL_ATTR_SSL_CA
+        value: /etc/secrets/aiven-ca.pem
+      - key: TRUSTED_PROXIES
+        value: "*"
+      - key: SESSION_DRIVER
+        value: database
+      - key: SESSION_ENCRYPT
+        value: "true"
+      - key: SESSION_SECURE_COOKIE
+        value: "true"
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: warning
+      - key: MAIL_MAILER
+        value: log
+      - key: HOSPITAL_TIMEZONE
+        value: Asia/Karachi
+      - key: INITIAL_ADMIN_EMAIL
+        sync: false
+      - key: INITIAL_ADMIN_PASSWORD
+        sync: false
+# Add aiven-ca.pem via Render Environment > Secret Files before first deployment.

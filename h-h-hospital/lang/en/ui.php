@@ -1,0 +1,45 @@
+<?php
+
+return [
+    'brand' => ['department' => 'Outpatient care', 'short' => 'H&H'],
+    'skip' => 'Skip to content',
+    'nav' => ['visit' => 'Your visit', 'information' => 'Visiting information', 'contact' => 'Contact', 'staff' => 'Staff preview', 'menu' => 'Open navigation', 'overview' => 'Overview', 'components' => 'Interface library', 'public' => 'Public website', 'workspace' => 'WORKSPACE', 'management' => 'CARE MANAGEMENT', 'appointments' => 'Appointments', 'patients' => 'Patients', 'doctors' => 'Doctors', 'soon' => 'Soon'],
+    'actions' => ['close' => 'Close', 'dismiss' => 'Dismiss notification', 'previous' => 'Previous', 'next' => 'Next', 'loading' => 'Please wait…', 'view' => 'View details', 'view_for' => 'View details for :name', 'cancel' => 'Cancel', 'check' => 'Check form', 'open_dialog' => 'Open dialog', 'back' => 'Back to overview'],
+    'status' => ['pending' => 'Pending', 'confirmed' => 'Confirmed', 'completed' => 'Completed', 'cancelled' => 'Cancelled', 'priority' => 'Priority', 'full' => 'Full', 'closed' => 'Closed', 'normal' => 'Normal'],
+    'pagination' => ['label' => 'Pagination', 'page' => 'Page :page', 'summary' => 'Showing :from–:to of :total'],
+    'required' => 'required',
+    'public' => [
+        'eyebrow' => 'A LITTLE CLARITY. A LOT OF CARE.',
+        'heading' => 'Your health.',
+        'heading_accent' => 'Our everyday priority.',
+        'intro' => 'A thoughtful approach to outpatient care, with a clearer path from planning your visit to seeing your doctor.',
+        'explore' => 'Plan your visit',
+        'reception' => 'Speak with reception',
+        'availability' => 'Choose a doctor to see available OPD dates and reserve your seat.',
+        'journey_eyebrow' => 'YOUR PATH TO CARE',
+        'journey_title' => 'A simpler visit starts here.',
+        'journey_note' => 'A booking reference reserves your place. Your OPD token is issued at reception.',
+        'steps_eyebrow' => 'KNOW WHAT TO EXPECT',
+        'steps_title' => 'A little guidance, every step of the way.',
+        'steps' => [
+            ['icon' => 'calendar', 'title' => 'Plan your visit', 'description' => 'Check your doctor’s OPD days and availability before visiting.'],
+            ['icon' => 'ticket', 'title' => 'Check in at reception', 'description' => 'Verify your details, make payment and receive your OPD token.'],
+            ['icon' => 'heart', 'title' => 'Meet your doctor', 'description' => 'Bring your previous prescriptions and discuss your concerns with your doctor.'],
+        ],
+        'prepare_eyebrow' => 'BEFORE YOU ARRIVE',
+        'prepare_title' => 'Come prepared.\nFeel more at ease.',
+        'prepare_description' => 'A few small things can make your visit easier for you and the team caring for you.',
+        'prepare_items' => ['Bring previous prescriptions and relevant reports.', 'Keep your booking reference handy, if you have one.', 'Visit reception for payment, check-in and your token.'],
+        'contact_title' => 'A question before your visit?',
+        'contact_description' => 'Speak with our reception team about OPD timings, availability or changes to a visit.',
+        'contact_fallback' => 'Please visit the hospital reception desk for assistance.',
+        'footer_note' => 'Clearer visits. Thoughtful care.',
+        'footer_rights' => 'All rights reserved.',
+    ],
+    'staff' => [
+        'title' => 'Reception overview', 'eyebrow' => 'A CALMER DAY, A CLEARER WORKSPACE', 'intro' => 'Keep every step of a patient’s visit in view.', 'preview' => 'Design preview', 'preview_message' => 'These are fictional sample records. Staff sign-in and live workflows will be connected in the next phase.', 'today' => 'Workspace', 'team' => 'H&H team', 'visits' => 'Sample visits', 'waiting' => 'Waiting for arrival', 'checked_in' => 'Checked in', 'finished' => 'Visits completed', 'table_title' => 'Patient visits', 'table_description' => 'A preview of the shared appointment list.', 'patient' => 'Patient', 'reference' => 'Reference', 'doctor' => 'Doctor', 'status' => 'Status', 'visit_type' => 'Visit type', 'actions' => 'Actions', 'reference_label' => 'Booking reference', 'visit_note' => 'This is a display sample. No booking, payment or patient record is created by this preview.', 'details_title' => 'Sample visit details', 'all_visits' => 'Sample appointments', 'quick_title' => 'Everything in its place.', 'quick_description' => 'Shared fields, clear statuses and familiar actions bring consistency to every workspace.', 'explore_components' => 'Explore the interface library', 'empty_title' => 'A fresh start for the next visit', 'empty_description' => 'New appointments will appear here once the booking workflow is connected.',
+    ],
+    'library' => [
+        'title' => 'Interface library', 'intro' => 'One consistent set of building blocks for a thoughtful patient experience.', 'eyebrow' => 'SHARED BLADE DESIGN', 'forms' => 'Patient details', 'forms_description' => 'A working validation preview. Nothing is booked or saved.', 'name' => 'Patient name', 'name_placeholder' => 'Enter the patient’s full name', 'phone' => 'Mobile number', 'phone_hint' => 'Use a number reception can reach you on.', 'department' => 'Department', 'choose_department' => 'Select a department', 'general' => 'General OPD', 'specialist' => 'Specialist OPD', 'notes' => 'Notes', 'notes_placeholder' => 'Anything you would like reception to know…', 'disabled_label' => 'Booking reference', 'disabled_hint' => 'Assigned after a booking is confirmed by the server.', 'checked' => 'Form checked successfully. This preview has not saved any patient data.', 'errors' => 'Please check the highlighted fields.', 'states' => 'Actions & feedback', 'states_description' => 'Clear signals at every stage of a visit.', 'primary' => 'Primary action', 'secondary' => 'Secondary action', 'disabled' => 'Unavailable', 'loading' => 'Saving…', 'danger' => 'Destructive action', 'badges' => 'Visit statuses', 'notice_title' => 'Keep patients informed', 'notice' => 'Notifications stay readable, dismissible and separate from appointment status.', 'dialog_title' => 'A clear moment to pause', 'dialog_description' => 'Dialogs keep keyboard focus inside, close with Escape and return focus to the opening button.', 'dialog_body' => 'Use this shared dialog for patient details or a confirmation step. Opening or closing it does not change a booking or payment.', 'empty_title' => 'No visits to show yet', 'empty_description' => 'When records are available, they will appear here with the same consistent list layout.', 'tokens' => 'The visual foundation', 'tokens_description' => 'Teal actions, quiet surfaces, readable typography and visible keyboard focus.', 'color_primary' => 'Care teal', 'color_ink' => 'Deep ink', 'color_surface' => 'Warm canvas', 'color_border' => 'Soft border', 'type_sample' => 'Care, with clarity.', 'spacing' => 'A shared 4 px spacing scale keeps layouts balanced.',
+    ],
+];

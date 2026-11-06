@@ -1,0 +1,30 @@
+<?php
+
+return [
+    'cancel' => 'Cancel appointment', 'cancelled' => 'Appointment cancelled. One reserved seat was released; payment and token records were retained.',
+    'already_cancelled' => 'This appointment was already cancelled. The original cancellation is shown; no additional seat was released.',
+    'reason' => 'Reason', 'cancel_hint' => 'Cancelling releases one reserved seat. A paid collection stays on the original receipt; any cash refund must be recorded separately by an Administrator.',
+    'cancel_confirmed' => 'I verified this visit and want to cancel its reservation.', 'history' => 'Cancellation history',
+    'cancelled_at' => 'Cancelled at', 'actor' => 'Recorded by', 'previous_status' => 'Previous status',
+    'not_eligible' => 'A consultation that has started or is completed cannot be cancelled here.',
+    'financial' => 'Collection & refunds', 'collection' => 'Original cash collection', 'refunded' => 'Cash refunds recorded', 'remaining' => 'Collection remaining',
+    'no_refund' => 'No refund recorded', 'partial_refund' => 'Partially refunded', 'full_refund' => 'Fully refunded',
+    'independent' => 'Appointment cancellation and cash refund are separate records. The original receipt still shows the original collection.',
+    'refund_history' => 'Refund history', 'refund_reference' => 'Refund reference', 'amount' => 'Cash refund amount',
+    'refunded_at' => 'Refund recorded at', 'refund' => 'Record cash refund',
+    'refund_hint' => 'Record cash already returned for this cancelled visit. Check the refund history before recording another amount. This form records the refund; it does not transfer money.',
+    'amount_hint' => 'Use a positive amount in :currency, for example 500.00. The server checks the remaining collection.',
+    'cash_returned' => 'I verified the original receipt and returned this cash amount to the patient.',
+    'refund_recorded' => 'Cash refund recorded against the original receipt.', 'refund_replayed' => 'This refund was already recorded. The original record is shown; no duplicate was added.',
+    'cancel_first' => 'Refund recording is available after an eligible paid appointment has been cancelled.',
+    'admin_only' => 'Only an Administrator can record a cash refund.',
+    'errors' => [
+        'not_eligible' => 'Only Pending or waiting appointments can be cancelled. Current and completed consultations cannot be cancelled here.',
+        'needs_review' => 'The reservation or cancellation record needs review. No further capacity change was made.',
+        'key_conflict' => 'This form was already used with different details. Review the original cancellation/refund before starting another action.',
+        'positive_amount' => 'The cash refund must be greater than zero.',
+        'cancel_before_refund' => 'Cancel an eligible paid waiting visit before recording its refund. Current or completed consultations are not eligible here.',
+        'over_refund' => 'This amount exceeds the remaining collection. Review the latest refund history.',
+        'retry' => 'The result could not be confirmed. Keep this form and review the latest record or retry the same form. Do not return cash a second time.',
+    ],
+];

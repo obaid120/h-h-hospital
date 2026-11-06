@@ -1,0 +1,2 @@
+# Preserve the directory required by Composer without publishing local fixtures.
+*.php

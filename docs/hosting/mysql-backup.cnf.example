@@ -1,0 +1,11 @@
+# Copy OUTSIDE the checkout to /etc/handh/backup.cnf; owner opd, mode 600.
+# Supply the actual password only in that private copy.
+[client]
+host=127.0.0.1
+port=3306
+protocol=tcp
+user=opd_backup
+password=REPLACE_ON_SERVER
+# For Aiven, use its actual host/port and the downloaded project CA:
+# ssl-mode=VERIFY_IDENTITY
+# ssl-ca=/etc/handh/aiven-ca.pem

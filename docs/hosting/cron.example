@@ -1,0 +1,9 @@
+# SELF-MANAGED LINUX RUNNER ONLY, not Render Free. Paths/user must be adapted.
+# /etc/cron.d/handh-backup: OS user opd; clock UTC; checkout in /opt/handh.
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+# Configure cron mail delivery to an actual monitored operator mailbox.
+# MAILTO=operator@your-domain.example
+# Render's app scheduler is managed INSIDE its container, not by this runner.
+# 21:15 UTC = 02:15 Asia/Karachi. Replace recipient and rclone remote FIRST.
+15 21 * * * opd /bin/bash /opt/handh/docs/hosting/backup-database.sh /etc/handh/backup.cnf REPLACE_AIVEN_DATABASE /var/backups/handh REPLACE_GPG_FINGERPRINT backup-remote:handh/database >> /var/log/handh/backup.log 2>&1

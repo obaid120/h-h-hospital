@@ -1,0 +1,3 @@
+<x-layouts.public :title="__('booking.title')" :description="__('booking.intro')">
+    <section class="page-container py-10 sm:py-16"><div class="mb-8 flex flex-wrap items-end justify-between gap-4"><div><p class="eyebrow mb-3">{{ __('booking.choose_doctor') }}</p><h1 class="section-heading">{{ __('booking.title') }}</h1><p class="mt-4 max-w-2xl text-sm leading-6 text-muted">{{ __('booking.intro') }}</p></div><x-ui.button variant="secondary" :href="route('home').'#doctors'">{{ __('booking.home') }}</x-ui.button></div><div class="panel p-5 sm:p-8">@include('booking.form')</div></section>
+</x-layouts.public>

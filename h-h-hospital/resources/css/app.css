@@ -1,0 +1,161 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-display: Georgia, 'Times New Roman', serif;
+    --color-care-50: #edf6f1;
+    --color-care-100: #d7ebe1;
+    --color-care-200: #b1d5c5;
+    --color-care-500: #258575;
+    --color-care-600: #177567;
+    --color-care-700: #126c60;
+    --color-care-800: #155348;
+    --color-care-900: #143e36;
+    --color-ink: #203b35;
+    --color-muted: #64756e;
+    --color-line: #dfe7e1;
+    --color-canvas: #f7f9f6;
+    --color-surface: #ffffff;
+    --radius-panel: 1.25rem;
+    --radius-control: 0.625rem;
+}
+
+@layer base {
+    html { scroll-behavior: smooth; scroll-padding-top: 6rem; }
+    body { background: var(--color-canvas); color: var(--color-ink); }
+    button, summary, select { cursor: pointer; }
+    button:disabled { cursor: not-allowed; }
+    :focus-visible { outline: 2px solid var(--color-care-600); outline-offset: 4px; }
+    ::selection { background: var(--color-care-100); color: var(--color-care-900); }
+    [hidden] { display: none !important; }
+}
+
+@layer components {
+    .page-container { @apply mx-auto w-full max-w-7xl px-6 sm:px-10 lg:px-12; }
+    .eyebrow { @apply text-[10px] font-semibold tracking-[.2em] text-care-700 uppercase; }
+    .brand { @apply inline-flex min-w-0 max-w-full items-center gap-3 text-ink; }
+    .brand-mark { @apply flex size-10 shrink-0 items-center justify-center rounded-xl bg-care-700 p-2 text-white; }
+    .skip-link { @apply fixed top-3 left-3 z-[100] -translate-y-24 rounded-control bg-care-900 px-5 py-3 text-sm font-semibold text-white focus:translate-y-0; }
+    .button { @apply inline-flex min-h-11 items-center justify-center gap-2.5 rounded-control border px-5 py-2.5 text-sm font-semibold no-underline transition-colors; }
+    .button [data-button-label] { @apply inline-flex items-center justify-center gap-2.5; }
+    .button-primary { @apply border-care-700 bg-care-700 text-white hover:border-care-800 hover:bg-care-800; box-shadow: 0 1px 2px #143e3614, inset 0 1px 0 #ffffff14; }
+    .button-secondary { @apply border-line bg-white text-ink hover:border-care-200 hover:bg-care-50; }
+    .button-ghost { @apply border-transparent bg-transparent text-muted hover:bg-care-50 hover:text-care-800; }
+    .button-danger { @apply border-red-700 bg-red-700 text-white hover:bg-red-800; }
+    .button-sm { @apply min-h-9 px-3 py-1.5 text-xs; }
+    .button:disabled, .button[aria-disabled=true] { @apply pointer-events-none opacity-45; }
+    .button-spinner { @apply size-4 shrink-0 rounded-full border-2 border-current border-r-transparent; animation: button-spin .7s linear infinite; }
+    .icon-button { @apply inline-flex size-10 items-center justify-center rounded-control text-muted transition-colors hover:bg-black/5 hover:text-ink; }
+    .panel { @apply rounded-panel border border-line bg-surface; box-shadow: 0 3px 12px #203b3503; }
+    .panel-heading { @apply flex flex-wrap items-center justify-between gap-4 border-b border-line px-6 py-5; }
+    .panel-heading > :first-child { @apply min-w-0 flex-1; }
+    .panel-title { @apply text-base font-semibold tracking-tight text-ink; }
+    .panel-description { @apply mt-1 text-xs leading-5 text-muted; }
+    .field { @apply space-y-2; }
+    .field-label { @apply block text-xs font-semibold text-ink; }
+    .form-control { @apply block min-h-11 w-full rounded-control border border-line bg-white px-3.5 py-2.5 text-sm text-ink transition-colors placeholder:text-muted/70 hover:border-care-200; }
+    .form-control:focus { @apply border-care-600 outline-2 outline-offset-2 outline-care-600; }
+    .form-control:disabled { @apply cursor-not-allowed bg-canvas text-muted; }
+    textarea.form-control { @apply resize-y leading-6; }
+    .form-control.is-invalid { @apply border-red-600; }
+    .form-control.is-invalid:focus { @apply outline-red-600; }
+    .field-hint { @apply text-xs leading-5 text-muted; }
+    .field-error { @apply text-xs leading-5 font-medium text-red-700; }
+    .badge { @apply inline-flex w-fit items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] leading-4 font-medium; }
+    .badge-dot { @apply size-1.5 rounded-full bg-current; }
+    .badge-info { @apply border-sky-200/70 bg-sky-50 text-sky-800; }
+    .badge-success { @apply border-care-100 bg-care-50 text-care-800; }
+    .badge-warning { @apply border-amber-200/70 bg-amber-50 text-amber-800; }
+    .badge-danger { @apply border-rose-200/70 bg-rose-50 text-rose-800; }
+    .badge-neutral { @apply border-line bg-canvas text-muted; }
+    .notification { @apply flex items-start gap-3 rounded-xl border p-4 text-xs leading-5; }
+    .notification-copy { @apply leading-5; }
+    .notification-info { @apply border-care-100 bg-care-50 text-care-900; }
+    .notification-success { @apply border-emerald-200 bg-emerald-50 text-emerald-900; }
+    .notification-warning { @apply border-amber-200 bg-amber-50 text-amber-900; }
+    .notification-error { @apply border-rose-200 bg-rose-50 text-rose-900; }
+    .empty-state { @apply px-6 py-12 text-center; }
+    .empty-state-icon { @apply mx-auto flex size-14 items-center justify-center rounded-2xl border border-care-100 bg-care-50 text-care-700; }
+    .table-scroll { @apply w-full overflow-x-auto; }
+    .data-table { @apply w-full border-collapse text-left text-sm; }
+    .data-table th { @apply whitespace-nowrap border-b border-line bg-canvas/70 px-6 py-3.5 text-[10px] font-semibold tracking-wider text-muted uppercase; }
+    .data-table td { @apply border-b border-line/70 px-6 py-4; }
+    .data-table tr:last-child td { @apply border-b-0; }
+    .data-table tbody tr { @apply transition-colors hover:bg-care-50/40; }
+    .pagination { @apply flex flex-wrap items-center justify-between gap-3 border-t border-line px-6 py-4; }
+    .page-link { @apply flex size-9 items-center justify-center rounded-lg text-xs font-medium text-muted hover:bg-care-50; }
+    .page-link.is-current { @apply bg-care-700 text-white; }
+    .ui-dialog { @apply fixed inset-0 m-auto max-h-[90dvh] w-[calc(100%-2rem)] max-w-lg overflow-y-auto rounded-panel border border-line bg-white p-0 text-ink; box-shadow: 0 24px 80px #12382d33; }
+    .ui-dialog::backdrop { background: #12382d80; backdrop-filter: blur(3px); }
+    .ui-dialog.booking-dialog { @apply max-w-4xl; }
+    .booking-calendar { @apply rounded-xl border border-line bg-white p-3; }
+    .booking-day { @apply flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-lg border border-care-100 bg-care-50 px-0.5 py-2 text-xs font-semibold text-care-900 hover:border-care-600; }
+    .booking-day:disabled { @apply cursor-default border-transparent bg-canvas text-muted/75; }
+    .booking-day[aria-pressed=true] { @apply border-care-700 bg-care-700 text-white; }
+    .booking-day { transition: background-color 120ms, border-color 120ms; }
+    [data-calendar-days][aria-busy=true] { opacity: .55; }
+    .booking-day small { @apply max-w-full truncate text-[9px] font-normal; }
+    .dialog-open { overflow: hidden; }
+    .navigation-drawer { @apply top-0 right-auto bottom-0 left-0 m-0 h-dvh max-h-dvh w-72 max-w-[90vw] rounded-l-none rounded-r-2xl; }
+    .staff-nav-link { @apply flex min-h-11 items-center gap-3 rounded-control px-3 py-2.5 text-sm font-medium text-muted hover:bg-canvas hover:text-ink; }
+    .staff-nav-link.is-active { @apply bg-care-50 text-care-800; }
+    .staff-nav-link[aria-disabled=true] { @apply cursor-default text-muted/75 hover:bg-transparent; }
+    .public-nav-link { @apply text-xs font-medium text-muted transition-colors hover:text-care-700; }
+    .public-menu summary { @apply list-none; }
+    .public-menu summary::-webkit-details-marker { display: none; }
+    .care-visual { @apply relative isolate flex min-h-[420px] items-center justify-center overflow-hidden rounded-[2rem] border border-care-100 bg-care-50 p-7 sm:p-10; }
+    .care-visual::before { content: ''; position: absolute; z-index: -1; inset: 0; opacity: .45; background-image: radial-gradient(var(--color-care-200) .8px, transparent .8px); background-size: 20px 20px; }
+    .care-orbit { @apply absolute -top-12 -right-16 -z-10 size-80 rounded-full border-[40px] border-care-100/80; }
+    .journey-card { @apply w-full max-w-sm rounded-2xl border border-white/90 bg-white p-7; box-shadow: 0 16px 40px #1553480d; }
+    .step-number { @apply flex size-9 shrink-0 items-center justify-center rounded-full border border-care-100 bg-care-50 text-xs font-semibold text-care-700; }
+    .stat-card { @apply rounded-panel border border-line bg-white p-5; }
+    .section-heading { @apply font-display text-3xl leading-tight tracking-tight text-ink sm:text-4xl; }
+}
+
+@keyframes button-spin { to { transform: rotate(360deg); } }
+.opd-receipt { width: 80mm; max-width: 100%; overflow-wrap: anywhere; }
+.receipt-details dt { color: #52625c; font-size: 10px; margin-bottom: 2px; }
+@page opd-receipt { size: 80mm 240mm; margin: 4mm; }
+.prescription-sheet { width: 210mm; max-width: 100%; min-height: 297mm; padding: 16mm; overflow-wrap: anywhere; }
+.prescription-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.prescription-medicines { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 11px; }
+.prescription-medicines th, .prescription-medicines td { padding: 10px 6px; border: 1px solid #dfe7e1; text-align: left; vertical-align: top; overflow-wrap: anywhere; white-space: pre-wrap; }
+.prescription-medicines th { background: #edf6f1; font-weight: 600; }
+.staff-content h1 { overflow-wrap: anywhere; }
+.brand > span:last-child { min-width: 0; }
+.brand-name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+@page opd-prescription { size: A4; margin: 15mm; }
+@media (max-width: 639px) {
+    .form-control { font-size: 16px; }
+    .prescription-sheet { padding: 20px; min-height: 0; }
+    .prescription-medicines { min-width: 580px; }
+    .ui-dialog.booking-dialog { width: 100%; max-width: 100%; height: 100dvh; max-height: 100dvh; border-radius: 0; }
+    .booking-dialog [data-dialog-panel] > :first-child { position: sticky; top: 0; z-index: 2; background: white; }
+}
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { transition-duration: 0s !important; animation-duration: 0s !important; animation-iteration-count: 1 !important; }
+}
+@media print {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    [data-motion-enter], [data-dialog-panel], [data-calendar-days] { opacity: 1 !important; transform: none !important; }
+    html.print-prescription { page: opd-prescription; }
+    html.print-receipt { page: opd-receipt; }
+    .prescription-document { page: opd-prescription; margin: 0; padding: 0; }
+    .prescription-page { margin: 0; padding: 0; max-width: none; }
+    .prescription-sheet { width: 100%; max-width: none; min-height: 0; margin: 0; padding: 0; border: 0; color: black; }
+    .prescription-medicines { min-width: 0; }
+    .prescription-medicines thead { display: table-header-group; }
+    .prescription-medicines tr, .prescription-heading, .prescription-sheet footer { break-inside: avoid; }
+    .opd-receipt-document { page: opd-receipt; margin: 0; padding: 0; }
+    .receipt-page { margin: 0; padding: 0; width: 72mm; }
+    .opd-receipt { width: 72mm; max-width: 100%; border: 0; padding: 0; break-inside: avoid; color: black; }
+    .skip-link, [data-screen-only], dialog { display: none !important; }
+    body { background: white; }
+    .staff-content { padding-left: 0 !important; }
+    .table-scroll { overflow: visible; }
+}
