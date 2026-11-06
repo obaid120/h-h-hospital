@@ -21,16 +21,25 @@ Aiven was considered earlier. Its currently fetched MySQL pricing starts with th
 
 ## 2. Resolve database TLS before deploying
 
-The included startup script requires a readable `MYSQL_ATTR_SSL_CA` file. It does not assume an Aiven-specific filename and does not silently disable certificate verification.
+The default startup mode requires a readable `MYSQL_ATTR_SSL_CA` file. It does not assume an Aiven-specific filename. The explicitly opted-in staging demo mode below is available for a self-signed server.
 
 A password-free TLS handshake against the user's selected Filess endpoint succeeded far enough to reveal a **self-signed certificate chain**, which is not trusted by the normal system CA bundle. This proves TLS is offered, not that the server identity has been authenticated. No database login, queries or writes were performed.
 
-Before entering database credentials into a running deployment:
+For a verified-certificate deployment:
 
 1. Obtain the database provider's CA certificate through its authenticated dashboard or another independently trusted provider channel. Look for SSL/TLS, CA certificate or connection security settings. If absent, ask the provider how to verify that particular MySQL endpoint.
 2. Confirm the provider's certificate setup supports verification for the actual database hostname. A CA file alone does not repair a hostname mismatch.
 3. In Render, add a Secret File named **`mysql-ca.pem`** containing the provider CA. Set `MYSQL_ATTR_SSL_CA=/etc/secrets/mysql-ca.pem`.
 4. If a valid, hostname-verifiable provider certificate cannot be obtained, keep deployment pending; do not remove TLS checks or copy an unrelated Aiven CA to get past startup.
+
+For **fictional demo data only**, the user has chosen an encrypted staging connection without certificate identity verification. Set:
+
+```dotenv
+APP_ENV=staging
+DEMO_TLS_ALLOW_SELF_SIGNED=true
+```
+
+In this mode no CA Secret File is required; remove `MYSQL_ATTR_SSL_CA` from Render Environment if previously added. Startup requests TLS through PDO, preserves the explicit `false` verification option, and runs `ops:database` to check a nonempty negotiated `Ssl_cipher` **before** migrations. An unencrypted connection fails startup. This setting is rejected outside staging and has no effect on production PDO settings. It provides transport encryption but does not authenticate the server's identity; do not use real patient data with this demo mode. The default remains verified-certificate TLS when this opt-in is absent/false.
 
 Do not treat a certificate merely downloaded from an unverified connection as independently trusted. Do not paste passwords, full connection URIs or private credentials into GitHub/chat. Public CA files are trust configuration, not database passwords, but keep the selected trust material in Render Secret Files rather than the application image.
 
@@ -63,7 +72,8 @@ Use the dashboard's actual database values. `docs/hosting/.env.render.example` c
 APP_NAME="H&H Hospital"
 APP_ENV=staging
 APP_DEBUG=false
-APP_URL=https://YOUR-SERVICE.onrender.com
+# APP_URL is optional: startup uses Render's actual RENDER_EXTERNAL_URL.
+DEMO_TLS_ALLOW_SELF_SIGNED=false
 APP_KEY=YOUR_STABLE_LARAVEL_KEY
 DB_CONNECTION=mysql
 DB_HOST=YOUR_DATABASE_HOST
@@ -89,6 +99,20 @@ INITIAL_ADMIN_PASSWORD=YOUR_UNIQUE_STRONG_PASSWORD
 
 Render's individual environment inputs take plain values; don't add the example's wrapping quotes to the dashboard value. `TRUSTED_PROXIES=*` applies to Render's reverse-proxy-only ingress, not an arbitrary directly exposed server.
 
+Leave `APP_URL` unset during initial Render setup. The start script exports Render's actual `RENDER_EXTERNAL_URL` as `APP_URL` before running Artisan, so the assigned hostname does not need to be guessed before service creation. Remove any literal `YOUR_RENDER_SERVICE_URL` placeholder. For a configured custom domain, set an explicit HTTPS `APP_URL`; it takes precedence over the automatic Render URL. The actual assigned link also appears on the created service's dashboard.
+
+The temporary setup value `https://example.invalid` is also replaced automatically when Render supplies its actual URL. For the user's opted-in Filess fictional demo, change the template's `DEMO_TLS_ALLOW_SELF_SIGNED` value to `true` and keep `APP_ENV=staging`.
+
+## 4a. Transfer the existing local demo before first deploy
+
+The user requested their existing local demo records. A private `handh-demo-import.sql` export has been prepared outside Git tracking. It contains schema plus migrations, staff/users, doctor/schedule/patient/visit/payment/prescription/cancellation/refund/settings/audit records. It excludes sessions, password-reset tokens, cache and job **rows**; their empty table definitions remain so Laravel can operate.
+
+Import this file through Filess **Migration → File Upload** into the **empty selected database before the first Render deploy**. Do not import over existing application tables or repeat it after users start working. It contains no `DROP TABLE`, `CREATE DATABASE` or `USE` statements; the provider's selected database remains the target. A partial/error import must be reviewed rather than blindly repeated. Capture import success/error without exposing record values or passwords.
+
+Existing local demo account password hashes and IDs are preserved, so those accounts retain their current passwords. `staff:bootstrap-admin` will find the imported active Admin and will not replace it with `INITIAL_ADMIN_*` values. Sign in with the existing local Admin, then change online passwords through Staff accounts as needed. Preserve the SQL privately; never attach it to a public issue, push it to GitHub, bake it into Docker or paste it into Render environment variables.
+
+Preparation evidence: local MySQL 8.4 restore into a newly created isolated database matched **15 patients / 7 doctors / 7 appointments / 6 payments / 1 cancellation / 1 refund / 1 prescription / 2 medicine rows / 9 users / 14 migrations**. Sessions and reset tokens were zero. The SQL file is 52,680 bytes; 21 restored tables allocated approximately 1.22 MiB locally. This is not a MySQL 8.0/provider quota verification. No doctor photo files were referenced in this source snapshot.
+
 Generate an online-environment APP_KEY **once**, privately, from the inner application directory:
 
 ```powershell
@@ -101,7 +125,7 @@ The initial Admin password must have at least 12 characters, upper/lowercase let
 
 ## 5. First deployment
 
-Only after the provider CA and environment are ready, create/deploy the Web Service. Startup validates required configuration, runs existing migrations with `--force`, and bootstraps one Admin if no active Admin exists. It never resets tables or seeds local demo records. It removes the one-time bootstrap password from its child-process environment, caches configuration/routes/views, records a startup heartbeat and starts Nginx/PHP-FPM/scheduler under supervisor.
+Only after the selected TLS mode, demo import and environment are ready, create/deploy the Web Service. Startup validates required configuration and a negotiated encrypted database session, runs existing migrations with `--force`, and bootstraps one Admin if no active Admin exists. It never resets tables or seeds local demo records. It removes the one-time bootstrap password from its child-process environment, caches configuration/routes/views, records a startup heartbeat and starts Nginx/PHP-FPM/scheduler under supervisor.
 
 If migration, TLS or connection fails, startup exits before serving. Resolve the actual error and redeploy; do not use `migrate:fresh`, overwrite the existing database or disable certificate verification. SQL permissions must allow schema migrations in the selected database, not unrelated databases.
 

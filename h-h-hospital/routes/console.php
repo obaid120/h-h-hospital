@@ -81,6 +81,40 @@ Artisan::command('ops:heartbeat', function (): int {
 
 Schedule::command('ops:heartbeat')->everyMinute()->evenInMaintenanceMode();
 
+Artisan::command('ops:database', function (): int {
+    if (config('hosting.allow_self_signed_demo_tls') && ! app()->environment('staging')) {
+        $this->error('Self-signed demo TLS is allowed only in staging.');
+
+        return 1;
+    }
+
+    if (DB::connection()->getDriverName() !== 'mysql') {
+        $this->error('Hosted database startup requires MySQL.');
+
+        return 1;
+    }
+
+    try {
+        $status = DB::selectOne("SHOW SESSION STATUS LIKE 'Ssl_cipher'");
+        if (blank($status?->Value)) {
+            $this->error('MySQL connection is not encrypted. Startup stopped before migrations.');
+
+            return 1;
+        }
+    } catch (Throwable $exception) {
+        report($exception);
+        $this->error('Encrypted MySQL connection check failed. Review the private server logs.');
+
+        return 1;
+    }
+
+    $this->info(config('hosting.allow_self_signed_demo_tls')
+        ? 'MySQL TLS encryption confirmed. Demo mode does not verify server identity.'
+        : 'MySQL TLS encryption confirmed.');
+
+    return 0;
+})->purpose('Require an encrypted hosted MySQL session before schema or data writes');
+
 Artisan::command('ops:check {--production : Also require safe staging/production settings}', function (): int {
     $checks = [];
 

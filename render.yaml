@@ -14,9 +14,9 @@ services:
         value: staging
       - key: APP_DEBUG
         value: "false"
+      - key: DEMO_TLS_ALLOW_SELF_SIGNED
+        value: "false"
       - key: APP_KEY
-        sync: false
-      - key: APP_URL
         sync: false
       - key: APP_NAME
         value: H&H Hospital

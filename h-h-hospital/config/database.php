@@ -3,6 +3,8 @@
 use Illuminate\Support\Str;
 use Pdo\Mysql;
 
+$allowSelfSignedDemoTls = env('APP_ENV') === 'staging' && env('DEMO_TLS_ALLOW_SELF_SIGNED', false) === true;
+
 return [
 
     /*
@@ -61,7 +63,9 @@ return [
             'engine' => 'InnoDB',
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
-            ]) : [],
+                Mysql::ATTR_SSL_CIPHER => $allowSelfSignedDemoTls ? 'DEFAULT' : null,
+                Mysql::ATTR_SSL_VERIFY_SERVER_CERT => $allowSelfSignedDemoTls ? false : null,
+            ], fn (mixed $option): bool => $option !== null && $option !== '') : [],
         ],
 
         'mariadb' => [
